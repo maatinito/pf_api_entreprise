@@ -4,7 +4,7 @@ package main
 // La structure reproduit exactement le contrat i-taiete.
 type Etablissement struct {
 	ID                  int           `json:"id"`
-	Entreprise          Entreprise    `json:"entreprise"`
+	Entreprise          *Entreprise   `json:"entreprise"`
 	NumEtablissement    int           `json:"numEtablissement"`
 	NomCommercial       *string       `json:"nomCommercial"`
 	BoitePostale        *string       `json:"boitePostale"`
@@ -18,7 +18,7 @@ type Etablissement struct {
 	Rue                 *string       `json:"rue"`
 	Immeuble            *string       `json:"immeuble"`
 	ActivitePrincipale  *ActiviteNAF  `json:"activitePrincipale"`
-	ActiviteSecondaires []ActiviteNAF `json:"activiteSecondaires"`
+	ActiviteSecondaires []*ActiviteNAF `json:"activiteSecondaires"`
 	DateInscription     *string       `json:"dateInscription"`
 	DateModification    *string       `json:"dateModification"`
 	DateReinscription   *string       `json:"dateReinscription"`

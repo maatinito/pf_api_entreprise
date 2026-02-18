@@ -620,7 +620,7 @@ func TestJSONOutput_ActiviteSecondairesEmptyArray(t *testing.T) {
 	initReferences()
 
 	etab := Etablissement{
-		ActiviteSecondaires: []ActiviteNAF{},
+		ActiviteSecondaires: []*ActiviteNAF{},
 	}
 
 	data, err := json.Marshal(etab)

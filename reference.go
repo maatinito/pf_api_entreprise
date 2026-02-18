@@ -33,6 +33,11 @@ var (
 	subdivisionIDs    map[string]int
 	subdivisionMu     sync.Mutex
 	subdivisionNextID int = 1
+
+	// Caches pour les objets de référence (évite les allocations dupliquées)
+	effectifCache        map[string]*ClasseEffectif
+	formeJuridiqueCache  map[string]*FormeJuridique
+	nafCache             map[string]*ActiviteNAF
 )
 
 func initReferences() {
@@ -45,6 +50,10 @@ func initReferences() {
 	nafIDs = make(map[string]int)
 	communeIDs = make(map[string]int)
 	subdivisionIDs = make(map[string]int)
+
+	effectifCache = make(map[string]*ClasseEffectif)
+	formeJuridiqueCache = make(map[string]*FormeJuridique)
+	nafCache = make(map[string]*ActiviteNAF)
 }
 
 func loadJSONMap(path string) map[string]string {
@@ -65,13 +74,18 @@ func LookupEffectif(code string) *ClasseEffectif {
 	if code == "" {
 		return nil
 	}
+	if cached, ok := effectifCache[code]; ok {
+		return cached
+	}
 	libelle, ok := effectifsMap[code]
 	if !ok {
 		log.Printf("WARNING: code effectif inconnu: %q", code)
 		return nil
 	}
 	id := parseIntFromCode(code)
-	return &ClasseEffectif{ID: id, Libelle: libelle}
+	ce := &ClasseEffectif{ID: id, Libelle: libelle}
+	effectifCache[code] = ce
+	return ce
 }
 
 // LookupFormeJuridique retourne la FormeJuridique pour un code donné.
@@ -79,13 +93,18 @@ func LookupFormeJuridique(code string) *FormeJuridique {
 	if code == "" {
 		return nil
 	}
+	if cached, ok := formeJuridiqueCache[code]; ok {
+		return cached
+	}
 	libelle, ok := formesJuridiquesMap[code]
 	if !ok {
 		log.Printf("WARNING: code forme juridique inconnu: %q", code)
 		libelle = "Forme juridique inconnue (" + code + ")"
 	}
 	id := getFormeJuridiqueID(code)
-	return &FormeJuridique{ID: id, Code: code, Libelle: libelle}
+	fj := &FormeJuridique{ID: id, Code: code, Libelle: libelle}
+	formeJuridiqueCache[code] = fj
+	return fj
 }
 
 // LookupNAF retourne l'ActiviteNAF pour un code donné.
@@ -93,13 +112,18 @@ func LookupNAF(code string) *ActiviteNAF {
 	if code == "" {
 		return nil
 	}
+	if cached, ok := nafCache[code]; ok {
+		return cached
+	}
 	libelle, ok := nafMap[code]
 	if !ok {
 		log.Printf("WARNING: code NAF inconnu: %q", code)
 		libelle = "Activité inconnue (" + code + ")"
 	}
 	id := getNAFID(code)
-	return &ActiviteNAF{ID: id, Code: code, Libelle: libelle}
+	naf := &ActiviteNAF{ID: id, Code: code, Libelle: libelle}
+	nafCache[code] = naf
+	return naf
 }
 
 // LookupSubdivision retourne le libellé de subdivision pour un code commune.

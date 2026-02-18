@@ -100,7 +100,9 @@ func buildIndex(path string) (map[string][]Etablissement, int, error) {
 	index := make(map[string][]Etablissement)
 	entrepriseIDs := make(map[string]int)
 	entrepriseNextID := 1
-	communeNames := make(map[string]string) // code commune → libellé
+	entrepriseCache := make(map[string]*Entreprise) // numtah → Entreprise partagée
+	communeNames := make(map[string]string)         // code commune → libellé
+	communeCache := make(map[string]*CommuneGeo)    // code commune → CommuneGeo partagée
 	etabID := 1
 	lineNum := 1
 
@@ -126,7 +128,7 @@ func buildIndex(path string) (map[string][]Etablissement, int, error) {
 			communeNames[record[12]] = record[13]
 		}
 
-		etab := parseRecord(record, etabID, entrepriseIDs, &entrepriseNextID, communeNames)
+		etab := parseRecord(record, etabID, entrepriseIDs, &entrepriseNextID, entrepriseCache, communeNames, communeCache)
 		numtah := record[0]
 		index[numtah] = append(index[numtah], etab)
 		etabID++
@@ -137,82 +139,54 @@ func buildIndex(path string) (map[string][]Etablissement, int, error) {
 	return index, totalEtabs, nil
 }
 
-func parseRecord(record []string, etabID int, entrepriseIDs map[string]int, entrepriseNextID *int, communeNames map[string]string) Etablissement {
+func parseRecord(record []string, etabID int, entrepriseIDs map[string]int, entrepriseNextID *int, entrepriseCache map[string]*Entreprise, communeNames map[string]string, communeCache map[string]*CommuneGeo) Etablissement {
 	numtah := record[0]
 
-	// Obtenir ou créer l'ID entreprise
-	entID, ok := entrepriseIDs[numtah]
-	if !ok {
-		entID = *entrepriseNextID
-		entrepriseIDs[numtah] = entID
-		*entrepriseNextID++
+	// Réutiliser l'Entreprise existante ou en créer une nouvelle
+	ent, entExists := entrepriseCache[numtah]
+	if !entExists {
+		// Obtenir ou créer l'ID entreprise
+		entID, ok := entrepriseIDs[numtah]
+		if !ok {
+			entID = *entrepriseNextID
+			entrepriseIDs[numtah] = entID
+			*entrepriseNextID++
+		}
+
+		// Construire la commune entreprise (depuis Com_BP_ENT, col 8)
+		entCommune := lookupOrCreateCommune(record[8], communeNames, communeCache)
+
+		ent = &Entreprise{
+			ID:                 entID,
+			NumeroTahiti:       numtah,
+			RaisonSociale:      nullableTrimmedString(record[1]),
+			Sigle:              nullableString(record[2]),
+			ClasseEffectif:     LookupEffectif(record[5]),
+			FormeJuridique:     LookupFormeJuridique(record[3]),
+			ActivitePrincipale: LookupNAF(record[4]),
+			Commune:            entCommune,
+			Email:              nil,
+			Telephone:          nil,
+			AdressePostale:     nullableString(record[6]),
+			BoitePostale:       nullableString(record[7]),
+			DateInscription:    convertDate(record[26]),
+			DateModification:   convertDate(record[27]),
+			DateRadiation:      convertDate(record[28]),
+			DateReinscription:  convertDate(record[29]),
+			Version:            nil,
+		}
+		entrepriseCache[numtah] = ent
 	}
 
 	// Parser NumETA en entier
 	numETA := parseIntField(record[9])
 
-	// Construire la commune entreprise (depuis Com_BP_ENT, col 8)
-	var entCommune *CommuneGeo
-	comBP := record[8]
-	if comBP != "" {
-		subdivLibelle := LookupSubdivision(comBP)
-		subdivID := GetSubdivisionID(subdivLibelle)
-		comBPLibelle := communeNames[comBP]
-		entCommune = &CommuneGeo{
-			ID:              GetCommuneID(comBP),
-			CommuneAssociee: comBPLibelle,
-			CommuneMere:     comBPLibelle,
-			Subdivision: &Subdivision{
-				ID:      subdivID,
-				Libelle: subdivLibelle,
-			},
-			ChampImport: parseIntField(comBP),
-		}
-	}
-
-	// Construire l'objet entreprise
-	ent := Entreprise{
-		ID:                 entID,
-		NumeroTahiti:       numtah,
-		RaisonSociale:      nullableTrimmedString(record[1]),
-		Sigle:              nullableString(record[2]),
-		ClasseEffectif:     LookupEffectif(record[5]),
-		FormeJuridique:     LookupFormeJuridique(record[3]),
-		ActivitePrincipale: LookupNAF(record[4]),
-		Commune:            entCommune,
-		Email:              nil,
-		Telephone:          nil,
-		AdressePostale:     nullableString(record[6]),
-		BoitePostale:       nullableString(record[7]),
-		DateInscription:    convertDate(record[26]),
-		DateModification:   convertDate(record[27]),
-		DateRadiation:      convertDate(record[28]),
-		DateReinscription:  convertDate(record[29]),
-		Version:            nil,
-	}
-
 	// Parser les activités NAF
 	activitePrincipale := LookupNAF(record[20])
 	activiteSecondaires := buildActiviteSecondaires(record[21:26])
 
-	// Parser la commune
-	var communeGeo *CommuneGeo
-	comEtab := record[12]
-	comEtabLibelle := record[13]
-	if comEtab != "" {
-		subdivLibelle := LookupSubdivision(comEtab)
-		subdivID := GetSubdivisionID(subdivLibelle)
-		communeGeo = &CommuneGeo{
-			ID:              GetCommuneID(comEtab),
-			CommuneAssociee: comEtabLibelle,
-			CommuneMere:     comEtabLibelle,
-			Subdivision: &Subdivision{
-				ID:      subdivID,
-				Libelle: subdivLibelle,
-			},
-			ChampImport: parseIntField(comEtab),
-		}
-	}
+	// Parser la commune établissement (avec cache)
+	communeGeo := lookupOrCreateCommune(record[12], communeNames, communeCache)
 
 	// Concaténer Num_adr + Rue (comme i-taiete)
 	rue := buildRue(record[16], record[17])
@@ -242,19 +216,44 @@ func parseRecord(record []string, etabID int, entrepriseIDs map[string]int, entr
 	}
 }
 
-func buildActiviteSecondaires(codes []string) []ActiviteNAF {
-	var result []ActiviteNAF
+// lookupOrCreateCommune retourne un *CommuneGeo depuis le cache ou en crée un nouveau.
+func lookupOrCreateCommune(codeCommune string, communeNames map[string]string, communeCache map[string]*CommuneGeo) *CommuneGeo {
+	if codeCommune == "" {
+		return nil
+	}
+	if cached, ok := communeCache[codeCommune]; ok {
+		return cached
+	}
+	subdivLibelle := LookupSubdivision(codeCommune)
+	subdivID := GetSubdivisionID(subdivLibelle)
+	libelle := communeNames[codeCommune]
+	cg := &CommuneGeo{
+		ID:              GetCommuneID(codeCommune),
+		CommuneAssociee: libelle,
+		CommuneMere:     libelle,
+		Subdivision: &Subdivision{
+			ID:      subdivID,
+			Libelle: subdivLibelle,
+		},
+		ChampImport: parseIntField(codeCommune),
+	}
+	communeCache[codeCommune] = cg
+	return cg
+}
+
+func buildActiviteSecondaires(codes []string) []*ActiviteNAF {
+	var result []*ActiviteNAF
 	for _, code := range codes {
 		if code == "" {
 			continue
 		}
 		naf := LookupNAF(code)
 		if naf != nil {
-			result = append(result, *naf)
+			result = append(result, naf)
 		}
 	}
 	if result == nil {
-		return []ActiviteNAF{}
+		return []*ActiviteNAF{}
 	}
 	return result
 }
