@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -134,6 +135,13 @@ func buildIndex(path string) (map[string][]Etablissement, int, error) {
 		etabID++
 	}
 
+	// Trier les établissements par numEtablissement pour correspondre à l'ordre de i-taiete
+	for numtah := range index {
+		sort.Slice(index[numtah], func(i, j int) bool {
+			return index[numtah][i].NumEtablissement < index[numtah][j].NumEtablissement
+		})
+	}
+
 	totalEtabs := etabID - 1
 	log.Printf("CSV chargé: %d établissements, %d entreprises uniques", totalEtabs, len(entrepriseIDs))
 	return index, totalEtabs, nil
@@ -168,7 +176,7 @@ func parseRecord(record []string, etabID int, entrepriseIDs map[string]int, entr
 			Email:              nil,
 			Telephone:          nil,
 			AdressePostale:     nullableString(record[6]),
-			BoitePostale:       nullableString(record[7]),
+			BoitePostale:       stripLeadingZeros(record[7]),
 			DateInscription:    convertDate(record[26]),
 			DateModification:   convertDate(record[27]),
 			DateRadiation:      convertDate(record[28]),
@@ -290,6 +298,18 @@ func buildRue(numAdr, rue string) *string {
 	}
 	result := numAdr + " " + rue
 	return &result
+}
+
+// stripLeadingZeros retire les zéros initiaux d'une chaîne numérique ("004900" → "4900").
+func stripLeadingZeros(s string) *string {
+	if s == "" {
+		return nil
+	}
+	trimmed := strings.TrimLeft(s, "0")
+	if trimmed == "" {
+		trimmed = "0"
+	}
+	return &trimmed
 }
 
 // nullableADRGEO traite le champ ADRGEO : les guillemets littéraux "" sont considérés comme vide.
