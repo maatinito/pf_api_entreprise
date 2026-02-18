@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [tests]
     env:
-      repo: "maatinito/pf_api_entreprise"
+      repo: "matau/pf_api_entreprise"
     steps:
       - uses: actions/checkout@v4
 
