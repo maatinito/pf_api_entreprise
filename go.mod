@@ -1,5 +1,7 @@
 module github.com/govpf/pf-entreprise
 
-go 1.24
+go 1.24.0
 
-require golang.org/x/text v0.34.0 // indirect
+toolchain go1.24.13
+
+require golang.org/x/text v0.34.0
