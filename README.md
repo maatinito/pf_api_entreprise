@@ -132,6 +132,22 @@ main_test.go     -- Tests
 Dockerfile       -- Build multi-stage (golang:1.24-alpine -> alpine:3.19)
 ```
 
+## Benchmark et comparaison avec i-taiete
+
+```bash
+# Comparer les reponses avec i-taiete (50 entreprises)
+python3 benchmark/compare.py --csv exportrte.csv --compare-only --count 50
+
+# Mettre en cache les reponses i-taiete (evite les appels reseau repetes)
+python3 benchmark/cache_itaiete.py --csv exportrte.csv --count 500 --output benchmark/cache.json
+
+# Rapport entreprises creees dans le dernier mois
+python3 benchmark/report_recent.py --csv exportrte.csv --cache benchmark/cache.json --days 30
+
+# Mettre a jour la table des communes depuis i-taiete
+python3 benchmark/extract_communes.py --csv exportrte.csv
+```
+
 ## Licence
 
 Projet interne [DINUM / Gouvernement de la Polynesie francaise](https://www.service-public.pf/).

@@ -6,23 +6,28 @@ Test 1 : vitesse (chrono N requêtes sur chaque serveur)
 Test 2 : comparaison structurelle champ par champ avec normalisation
 
 Usage:
-  1. Lancer le nouveau serveur en local :
-     CSV_PATH=./exportrte.csv PORT=3000 ./pf-entreprise
+  # Tests complets (appels live)
+  python3 benchmark/compare.py --csv exportrte.csv
 
-  2. Lancer le script :
-     python3 benchmark/compare.py
+  # Avec cache local (beaucoup plus rapide)
+  python3 benchmark/compare.py --csv exportrte.csv --cache benchmark/cache_itaiete.json
 
-  Options :
-     --count N        nombre de TAHITI à tester (défaut: 200)
-     --csv PATH       chemin vers exportrte.csv pour extraire les numéros TAHITI
-     --new-url URL    URL du nouveau serveur (défaut: http://localhost:3000)
-     --speed-only     ne faire que le test de vitesse
-     --compare-only   ne faire que le test de comparaison
+  # Comparaison uniquement
+  python3 benchmark/compare.py --csv exportrte.csv --cache benchmark/cache_itaiete.json --compare-only
+
+Options:
+  --count N        nombre de TAHITI à tester (défaut: 200)
+  --csv PATH       chemin vers exportrte.csv
+  --cache PATH     fichier cache i-taiete (créé par cache_itaiete.py)
+  --new-url URL    URL du nouveau serveur (défaut: http://localhost:3000)
+  --speed-only     test de vitesse uniquement
+  --compare-only   test de comparaison uniquement
 """
 
 import argparse
 import csv
 import json
+import os
 import random
 import re
 import sys
@@ -89,9 +94,39 @@ def call_new_server(numero_tahiti, base_url):
         return {"_error": str(e)}
 
 
+def load_cache(cache_path):
+    """Charge le cache i-taiete depuis un fichier JSON."""
+    if not cache_path or not os.path.exists(cache_path):
+        return None
+    print(f"Chargement du cache {cache_path}...")
+    with open(cache_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    print(f"Cache chargé: {len(data)} entrées.")
+    return data
+
+
+def sort_activites_secondaires(etab):
+    """Trie activiteSecondaires par code pour éviter les faux positifs d'ordre."""
+    if not isinstance(etab, dict):
+        return etab
+    if "activiteSecondaires" in etab and isinstance(etab["activiteSecondaires"], list):
+        etab["activiteSecondaires"].sort(
+            key=lambda x: x.get("code", "") if isinstance(x, dict) else ""
+        )
+    return etab
+
+
+def normalize_etablissements(data):
+    """Normalise une liste d'établissements : tri + sort activités."""
+    if not isinstance(data, list):
+        data = [data] if data else []
+    data.sort(key=lambda x: x.get("numEtablissement", 0) if isinstance(x, dict) else 0)
+    return [sort_activites_secondaires(e) for e in data]
+
+
 # ========== TEST 1 : VITESSE ==========
 
-def speed_test(tahiti_numbers, new_base_url):
+def speed_test(tahiti_numbers, new_base_url, cache=None):
     """Compare la vitesse des deux serveurs."""
     count = len(tahiti_numbers)
     print(f"\n{'='*60}")
@@ -110,18 +145,25 @@ def speed_test(tahiti_numbers, new_base_url):
             print(f"   {i+1}/{count}...")
     new_time = time.time() - start
 
-    # Ancien serveur
-    print(f"\n>> Ancien serveur ({OLD_BASE_URL})...")
-    start = time.time()
-    old_errors = 0
-    for i, num in enumerate(tahiti_numbers):
-        result = call_old_server(num)
-        if isinstance(result, dict) and "_error" in result:
-            old_errors += 1
-        if (i + 1) % 50 == 0:
-            elapsed = time.time() - start
-            print(f"   {i+1}/{count}... ({elapsed:.1f}s)")
-    old_time = time.time() - start
+    # Ancien serveur (ou cache)
+    if cache is not None:
+        print(f"\n>> Ancien serveur (depuis cache local)...")
+        start = time.time()
+        old_errors = sum(1 for n in tahiti_numbers if isinstance(cache.get(n), dict) and "_error" in cache.get(n, {}))
+        old_time = time.time() - start
+        print(f"   {count}/{count} (instantané depuis cache)")
+    else:
+        print(f"\n>> Ancien serveur ({OLD_BASE_URL})...")
+        start = time.time()
+        old_errors = 0
+        for i, num in enumerate(tahiti_numbers):
+            result = call_old_server(num)
+            if isinstance(result, dict) and "_error" in result:
+                old_errors += 1
+            if (i + 1) % 50 == 0:
+                elapsed = time.time() - start
+                print(f"   {i+1}/{count}... ({elapsed:.1f}s)")
+        old_time = time.time() - start
 
     # Résultats
     print(f"\n{'─'*60}")
@@ -129,9 +171,10 @@ def speed_test(tahiti_numbers, new_base_url):
     print(f"{'─'*60}")
     print(f" {'Serveur':<25} {'Temps total':>12} {'Moy/requête':>12} {'Erreurs':>8}")
     print(f" {'─'*25} {'─'*12} {'─'*12} {'─'*8}")
-    print(f" {'Ancien (i-taiete)':<25} {old_time:>11.2f}s {old_time/count*1000:>10.1f}ms {old_errors:>8}")
+    if cache is None:
+        print(f" {'Ancien (i-taiete)':<25} {old_time:>11.2f}s {old_time/count*1000:>10.1f}ms {old_errors:>8}")
     print(f" {'Nouveau (pf-entreprise)':<25} {new_time:>11.2f}s {new_time/count*1000:>10.1f}ms {new_errors:>8}")
-    if new_time > 0:
+    if cache is None and new_time > 0:
         print(f"\n Accélération : x{old_time/new_time:.1f}")
     print()
 
@@ -143,10 +186,8 @@ def normalize(value):
     if value is None:
         return None
     if isinstance(value, str):
-        # Trim, lowercase, tirets/espaces unifiés
         v = value.strip().lower()
         v = re.sub(r"[\s\-_]+", " ", v)
-        # Supprimer accents courants pour comparaison
         return v
     return value
 
@@ -176,36 +217,60 @@ def generalize_key(key):
     return re.sub(r"\[\d+\]", "[*]", key)
 
 
-def compare_test(tahiti_numbers, new_base_url):
+# Champs à ignorer dans la comparaison (différences structurelles connues)
+IGNORED_FIELDS = {
+    "id",                            # auto-increment
+    "version",                       # timestamp interne i-taiete
+    "entreprise.id",                 # auto-increment
+    "entreprise.version",            # timestamp interne
+    "entreprise.telephone",          # absent du CSV
+    "entreprise.email",              # absent du CSV
+    "activitePrincipale.id",         # auto-increment
+    "activiteSecondaires[*].id",     # auto-increment
+    "communeGeo.id",                 # auto-increment
+    "entreprise.activitePrincipale.id",  # auto-increment
+    "entreprise.commune.id",         # auto-increment
+    "entreprise.formeJuridique.id",  # auto-increment
+    "entreprise.classeEffectif.id",  # auto-increment
+    "communeGeo.subdivision.id",     # auto-increment
+    "entreprise.commune.subdivision.id",  # auto-increment
+}
+
+
+def compare_test(tahiti_numbers, new_base_url, cache=None, show_ignored=False):
     """Compare les résultats des deux serveurs champ par champ."""
     count = len(tahiti_numbers)
+    source = "cache local" if cache is not None else OLD_BASE_URL
     print(f"\n{'='*60}")
-    print(f" TEST DE COMPARAISON — {count} entreprises")
+    print(f" TEST DE COMPARAISON — {count} entreprises (source: {source})")
     print(f"{'='*60}")
 
-    # Stats par champ généralisé
     stats = defaultdict(lambda: {
-        "total": 0,
-        "identical": 0,
-        "different": 0,
-        "old_only": 0,
-        "new_only": 0,
-        "diff_examples": [],
+        "total": 0, "identical": 0, "different": 0,
+        "old_only": 0, "new_only": 0, "diff_examples": [],
     })
 
     errors_old = 0
     errors_new = 0
     both_empty = 0
+    old_missing = 0  # présent dans nouveau mais pas dans cache/ancien
     compared = 0
 
     for i, num in enumerate(tahiti_numbers):
-        old_data = call_old_server(num)
+        # Récupérer données ancien serveur
+        if cache is not None:
+            old_data = cache.get(num)
+            if old_data is None:
+                old_missing += 1
+                old_data = []
+        else:
+            old_data = call_old_server(num)
+
         new_data = call_new_server(num, new_base_url)
 
-        if (i + 1) % 50 == 0:
+        if (i + 1) % 100 == 0:
             print(f"   {i+1}/{count}...")
 
-        # Ignorer les erreurs
         if isinstance(old_data, dict) and "_error" in old_data:
             errors_old += 1
             continue
@@ -213,38 +278,30 @@ def compare_test(tahiti_numbers, new_base_url):
             errors_new += 1
             continue
 
-        # Les deux retournent des listes d'établissements
-        if not isinstance(old_data, list):
-            old_data = [old_data] if old_data else []
-        if not isinstance(new_data, list):
-            new_data = [new_data] if new_data else []
+        old_data = normalize_etablissements(old_data)
+        new_data = normalize_etablissements(new_data)
 
         if len(old_data) == 0 and len(new_data) == 0:
             both_empty += 1
             continue
 
         compared += 1
-
-        # Trier par numEtablissement pour éviter les faux positifs
-        old_data.sort(key=lambda x: x.get("numEtablissement", 0))
-        new_data.sort(key=lambda x: x.get("numEtablissement", 0))
-
-        # Comparer les établissements un par un (par index)
         max_len = max(len(old_data), len(new_data))
+
         for idx in range(max_len):
             old_etab = old_data[idx] if idx < len(old_data) else {}
             new_etab = new_data[idx] if idx < len(new_data) else {}
 
             old_flat = flatten_json(old_etab)
             new_flat = flatten_json(new_etab)
-
             all_keys = set(old_flat.keys()) | set(new_flat.keys())
 
             for key in all_keys:
                 gkey = generalize_key(key)
+                if not show_ignored and gkey in IGNORED_FIELDS:
+                    continue
                 s = stats[gkey]
                 s["total"] += 1
-
                 old_val = old_flat.get(key)
                 new_val = new_flat.get(key)
 
@@ -257,44 +314,55 @@ def compare_test(tahiti_numbers, new_base_url):
                 else:
                     s["different"] += 1
                     if len(s["diff_examples"]) < 3:
-                        s["diff_examples"].append({
-                            "tahiti": num,
-                            "old": old_val,
-                            "new": new_val,
-                        })
+                        s["diff_examples"].append({"tahiti": num, "old": old_val, "new": new_val})
 
-    # Affichage des résultats
+    # Affichage
     print(f"\n{'─'*100}")
     print(f" RÉSULTATS COMPARAISON")
     print(f"{'─'*100}")
-    print(f" Entreprises testées : {count}")
-    print(f" Comparées (non vides): {compared}")
+    print(f" Entreprises testées  : {count}")
+    print(f" Comparées            : {compared}")
     print(f" Vides des 2 côtés   : {both_empty}")
-    print(f" Erreurs ancien      : {errors_old}")
-    print(f" Erreurs nouveau     : {errors_new}")
+    print(f" Erreurs ancien       : {errors_old}")
+    print(f" Erreurs nouveau      : {errors_new}")
+    if cache is not None:
+        print(f" Absentes du cache   : {old_missing}")
     print()
 
-    # Tableau des stats
-    header = f" {'Champ':<45} {'Total':>6} {'Ident.':>7} {'Diff.':>6} {'Ancien':>7} {'Nouveau':>8}"
-    print(header)
-    print(f" {'─'*45} {'─'*6} {'─'*7} {'─'*6} {'─'*7} {'─'*8}")
+    # Séparer champs OK / avec différences
+    ok_fields = {k: v for k, v in stats.items() if v["different"] == 0 and v["old_only"] == 0 and v["new_only"] == 0}
+    diff_fields = {k: v for k, v in stats.items() if v["different"] > 0 or v["old_only"] > 0 or v["new_only"] > 0}
 
-    for gkey in sorted(stats.keys()):
-        s = stats[gkey]
-        diff_marker = " ***" if s["different"] > 0 or s["old_only"] > 0 or s["new_only"] > 0 else ""
-        print(f" {gkey:<45} {s['total']:>6} {s['identical']:>7} {s['different']:>6} {s['old_only']:>7} {s['new_only']:>8}{diff_marker}")
+    print(f" Champs parfaitement identiques : {len(ok_fields)}")
+    print(f" Champs avec différences        : {len(diff_fields)}")
+    print()
+
+    header = f" {'Champ':<50} {'Total':>6} {'Ident.':>7} {'Diff.':>6} {'Anc.':>5} {'Nouv.':>6}"
+    print(header)
+    print(f" {'─'*50} {'─'*6} {'─'*7} {'─'*6} {'─'*5} {'─'*6}")
+
+    for gkey in sorted(diff_fields.keys()):
+        s = diff_fields[gkey]
+        total = s["total"]
+        pct_ok = s["identical"] / total * 100 if total > 0 else 0
+        print(f" {gkey:<50} {total:>6} {s['identical']:>6} ({pct_ok:4.0f}%) {s['different']:>6} {s['old_only']:>5} {s['new_only']:>6}")
+
+    if ok_fields:
+        print(f"\n Champs OK (100% identiques) : {', '.join(sorted(ok_fields.keys()))}")
 
     # Exemples de différences
-    has_diffs = {k: v for k, v in stats.items() if v["different"] > 0}
-    if has_diffs:
+    if diff_fields:
         print(f"\n{'─'*100}")
-        print(f" EXEMPLES DE DIFFÉRENCES (max 3 par champ)")
+        print(f" EXEMPLES DE DIFFÉRENCES")
         print(f"{'─'*100}")
-        for gkey in sorted(has_diffs.keys()):
-            s = has_diffs[gkey]
-            print(f"\n {gkey} ({s['different']} différences):")
-            for ex in s["diff_examples"]:
-                print(f"   TAHITI {ex['tahiti']}: ancien={ex['old']!r}  nouveau={ex['new']!r}")
+        for gkey in sorted(diff_fields.keys()):
+            s = diff_fields[gkey]
+            if s["different"] > 0:
+                total = s["total"]
+                pct = s["different"] / total * 100
+                print(f"\n {gkey} ({s['different']}/{total} = {pct:.0f}% de différences):")
+                for ex in s["diff_examples"]:
+                    print(f"   TAHITI {ex['tahiti']}: ancien={ex['old']!r}  nouveau={ex['new']!r}")
 
     print()
 
@@ -305,20 +373,31 @@ def main():
     parser = argparse.ArgumentParser(description="Benchmark ancien vs nouveau serveur")
     parser.add_argument("--count", type=int, default=200, help="Nombre de TAHITI à tester (défaut: 200)")
     parser.add_argument("--csv", default="exportrte.csv", help="Chemin vers exportrte.csv")
+    parser.add_argument("--cache", help="Fichier cache i-taiete (créé par cache_itaiete.py)")
     parser.add_argument("--new-url", default=NEW_BASE_URL, help="URL du nouveau serveur")
     parser.add_argument("--speed-only", action="store_true", help="Test de vitesse uniquement")
     parser.add_argument("--compare-only", action="store_true", help="Test de comparaison uniquement")
+    parser.add_argument("--show-ignored", action="store_true", help="Afficher aussi les champs ignorés (IDs, version...)")
     args = parser.parse_args()
+
+    cache = load_cache(args.cache)
 
     print(f"Extraction de {args.count} numéros TAHITI depuis {args.csv}...")
     tahiti_numbers = extract_tahiti_numbers(args.csv, args.count)
-    print(f"{len(tahiti_numbers)} numéros extraits.")
+
+    # Si cache fourni, filtrer sur les numéros présents dans le cache
+    if cache is not None:
+        in_cache = [n for n in tahiti_numbers if n in cache]
+        print(f"{len(in_cache)}/{len(tahiti_numbers)} numéros présents dans le cache.")
+        tahiti_numbers = in_cache
+
+    print(f"{len(tahiti_numbers)} numéros à comparer.")
 
     if not args.compare_only:
-        speed_test(tahiti_numbers, args.new_url)
+        speed_test(tahiti_numbers, args.new_url, cache)
 
     if not args.speed_only:
-        compare_test(tahiti_numbers, args.new_url)
+        compare_test(tahiti_numbers, args.new_url, cache, args.show_ignored)
 
 
 if __name__ == "__main__":

@@ -208,7 +208,7 @@ func parseRecord(record []string, etabID int, entrepriseIDs map[string]int, entr
 		AdressePostale:      nil,
 		Telephone:           nil,
 		Fax:                 nil,
-		PointKilometrique:   nullableString(record[14]),
+		PointKilometrique:   nullablePK(record[14]),
 		Quartier:            nullableString(record[15]),
 		AdresseGeo:          nullableADRGEO(record[19]),
 		CommuneGeo:          communeGeo,
@@ -272,7 +272,26 @@ func buildActiviteSecondaires(codes []string) []*ActiviteNAF {
 	if result == nil {
 		return []*ActiviteNAF{}
 	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Code < result[j].Code
+	})
 	return result
+}
+
+// nullablePK normalise un point kilométrique : supprime les zéros trailing après la virgule.
+// Ex: "18,700" → "18,7", "10,500" → "10,5", "4,5" → "4,5"
+func nullablePK(s string) *string {
+	if s == "" {
+		return nil
+	}
+	if strings.Contains(s, ",") {
+		s = strings.TrimRight(s, "0")
+		s = strings.TrimRight(s, ",")
+	}
+	if s == "" {
+		return nil
+	}
+	return &s
 }
 
 // nullableString retourne nil si la chaîne est vide, sinon un pointeur vers la chaîne.

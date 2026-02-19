@@ -104,7 +104,7 @@ func TestLookupEffectif(t *testing.T) {
 		expectedNil   bool
 	}{
 		{"08", 8, "200 à 499 personnes", false},
-		{"00", 0, "0 salarié", false},
+		{"00", 0, "Aucune personne", false},
 		{"13", 13, "10000 personnes et plus", false},
 		{"", 0, "", true},
 	}

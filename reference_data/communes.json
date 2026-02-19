@@ -55,6 +55,14 @@
     "communeAssociee": "Kauehi",
     "communeMere": "Fakarava"
   },
+  "16201": {
+    "communeAssociee": "Aratika",
+    "communeMere": "Kauehi"
+  },
+  "16202": {
+    "communeAssociee": "Raraka",
+    "communeMere": "Kauehi"
+  },
   "16300": {
     "communeAssociee": "Niau",
     "communeMere": "Fakarava"
@@ -79,6 +87,10 @@
     "communeAssociee": "Makaroa",
     "communeMere": "Gambier"
   },
+  "19006": {
+    "communeAssociee": "Mangareva",
+    "communeMere": "Gambier"
+  },
   "19009": {
     "communeAssociee": "Marutea Sud",
     "communeMere": "Gambier"
@@ -98,6 +110,10 @@
   "20300": {
     "communeAssociee": "Hereheretue",
     "communeMere": "Hao"
+  },
+  "20303": {
+    "communeAssociee": "Nukutepipi",
+    "communeMere": "Hereheretue"
   },
   "21100": {
     "communeAssociee": "Hikueru",
@@ -276,8 +292,8 @@
     "communeMere": "Pirae"
   },
   "37000": {
-    "communeAssociee": "Rangiroa",
-    "communeMere": "Rangiroa"
+    "communeAssociee": "Pukapuka",
+    "communeMere": "Pukapuka"
   },
   "38000": {
     "communeAssociee": "Punaauia",
