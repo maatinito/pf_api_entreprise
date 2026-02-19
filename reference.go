@@ -11,11 +11,18 @@ import (
 //go:embed reference_data
 var referenceFS embed.FS
 
+// CommuneRef contient les noms de commune associée et commune mère.
+type CommuneRef struct {
+	CommuneAssociee string `json:"communeAssociee"`
+	CommuneMere     string `json:"communeMere"`
+}
+
 var (
 	effectifsMap            map[string]string
 	formesJuridiquesMap     map[string]string
 	nafMap                  map[string]string
 	communesSubdivisionsMap map[string]string
+	communeRefMap           map[string]CommuneRef
 
 	// Auto-increment IDs par type de référence
 	formeJuridiqueIDs    map[string]int
@@ -45,6 +52,7 @@ func initReferences() {
 	formesJuridiquesMap = loadJSONMap("reference_data/formes_juridiques.json")
 	nafMap = loadJSONMap("reference_data/naf.json")
 	communesSubdivisionsMap = loadJSONMap("reference_data/communes_subdivisions.json")
+	communeRefMap = loadCommuneRefMap("reference_data/communes.json")
 
 	formeJuridiqueIDs = make(map[string]int)
 	nafIDs = make(map[string]int)
@@ -187,6 +195,29 @@ func getNAFID(code string) int {
 	nafIDs[code] = id
 	nafNextID++
 	return id
+}
+
+func loadCommuneRefMap(path string) map[string]CommuneRef {
+	data, err := referenceFS.ReadFile(path)
+	if err != nil {
+		log.Printf("WARNING: impossible de charger %s: %v (les communes utiliseront le fallback CSV)", path, err)
+		return make(map[string]CommuneRef)
+	}
+	var m map[string]CommuneRef
+	if err := json.Unmarshal(data, &m); err != nil {
+		log.Printf("WARNING: impossible de parser %s: %v", path, err)
+		return make(map[string]CommuneRef)
+	}
+	log.Printf("Table communes chargée: %d entrées", len(m))
+	return m
+}
+
+// LookupCommune retourne communeAssociee et communeMere pour un code commune.
+func LookupCommune(code string) (communeAssociee, communeMere string) {
+	if ref, ok := communeRefMap[code]; ok {
+		return ref.CommuneAssociee, ref.CommuneMere
+	}
+	return "", ""
 }
 
 func parseIntFromCode(code string) int {

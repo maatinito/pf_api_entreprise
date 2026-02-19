@@ -225,6 +225,10 @@ def compare_test(tahiti_numbers, new_base_url):
 
         compared += 1
 
+        # Trier par numEtablissement pour éviter les faux positifs
+        old_data.sort(key=lambda x: x.get("numEtablissement", 0))
+        new_data.sort(key=lambda x: x.get("numEtablissement", 0))
+
         # Comparer les établissements un par un (par index)
         max_len = max(len(old_data), len(new_data))
         for idx in range(max_len):

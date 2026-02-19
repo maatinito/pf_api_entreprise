@@ -234,11 +234,20 @@ func lookupOrCreateCommune(codeCommune string, communeNames map[string]string, c
 	}
 	subdivLibelle := LookupSubdivision(codeCommune)
 	subdivID := GetSubdivisionID(subdivLibelle)
-	libelle := communeNames[codeCommune]
+
+	// Priorité à la table de référence communes.json
+	communeAssociee, communeMere := LookupCommune(codeCommune)
+	if communeAssociee == "" {
+		// Fallback CSV pour codes inconnus
+		nom := communeNames[codeCommune]
+		communeAssociee = nom
+		communeMere = nom
+	}
+
 	cg := &CommuneGeo{
 		ID:              GetCommuneID(codeCommune),
-		CommuneAssociee: libelle,
-		CommuneMere:     libelle,
+		CommuneAssociee: communeAssociee,
+		CommuneMere:     communeMere,
 		Subdivision: &Subdivision{
 			ID:      subdivID,
 			Libelle: subdivLibelle,
