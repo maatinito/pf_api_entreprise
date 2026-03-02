@@ -186,10 +186,32 @@ def normalize(value):
     if value is None:
         return None
     if isinstance(value, str):
-        v = value.strip().lower()
+        # " null" et "" → None
+        v = value.strip()
+        if v == "" or v.lower() == "null":
+            return None
+        v = v.lower()
         v = re.sub(r"[\s\-_]+", " ", v)
         return v
     return value
+
+
+def normalize_pk(value):
+    """Normalise un point kilométrique : supprime les zéros trailing après la virgule."""
+    if value is None:
+        return None
+    if isinstance(value, str):
+        v = value.strip()
+        if v == "" or v.lower() == "null":
+            return None
+        if "," in v:
+            v = v.rstrip("0").rstrip(",")
+        return v
+    return value
+
+
+# Champs avec normalisation spéciale
+PK_FIELDS = {"pointKilometrique"}
 
 
 def flatten_json(obj, prefix=""):
@@ -309,6 +331,8 @@ def compare_test(tahiti_numbers, new_base_url, cache=None, show_ignored=False):
                     s["new_only"] += 1
                 elif key not in new_flat:
                     s["old_only"] += 1
+                elif gkey in PK_FIELDS and normalize_pk(old_val) == normalize_pk(new_val):
+                    s["identical"] += 1
                 elif normalize(old_val) == normalize(new_val):
                     s["identical"] += 1
                 else:

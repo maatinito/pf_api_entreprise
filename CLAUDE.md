@@ -76,6 +76,13 @@ docker build -t govpf/pf-entreprise .
 - Unknown `code_Fjur` values must log a WARNING (not fail)
 - Preserve trailing spaces in `raisonSociale` and `nomCommercial`
 
+### Data Source
+
+The CSV file `exportrte.csv` is published on data.gouv.fr and can be downloaded with:
+```bash
+curl -L -o exportrte.csv "https://www.data.gouv.fr/api/1/datasets/r/34184a7f-a4bf-4cf3-ac36-531388f3a6cb"
+```
+
 ### Configuration (env vars)
 
 | Variable | Default | Description |

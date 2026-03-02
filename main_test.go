@@ -275,9 +275,9 @@ func TestParseRecord_Etablissement000026(t *testing.T) {
 		t.Errorf("Rue = %v, attendu \"Avenue Bruat\"", etab.Rue)
 	}
 
-	// Champs null attendus
-	if etab.BoitePostale != nil {
-		t.Error("BoitePostale devrait être nil")
+	// BoitePostale dupliquée depuis l'entreprise (comme i-taiete)
+	if etab.BoitePostale == nil || *etab.BoitePostale != "115" {
+		t.Errorf("BoitePostale = %v, attendu \"115\"", etab.BoitePostale)
 	}
 	if etab.Telephone != nil {
 		t.Error("Telephone devrait être nil")
@@ -601,7 +601,7 @@ func TestJSONOutput_NullFields(t *testing.T) {
 	json.Unmarshal(data, &raw)
 
 	// Vérifier que les champs null sont bien null (pas absents)
-	nullFields := []string{"boitePostale", "adressePostale", "telephone", "fax",
+	nullFields := []string{"telephone", "fax",
 		"pointKilometrique", "quartier", "adresseGeo", "immeuble",
 		"dateRadiation", "dateReinscription", "version"}
 

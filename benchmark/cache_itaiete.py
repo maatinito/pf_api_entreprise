@@ -26,9 +26,11 @@ import json
 import os
 import random
 import sys
+import threading
 import time
 import urllib.request
 import urllib.error
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 
 OLD_BASE_URL = "https://api.gov.pf/i-taiete"
@@ -116,6 +118,7 @@ def main():
     parser.add_argument("--recent-days", type=int, help="Limiter aux entreprises créées dans les N derniers jours")
     parser.add_argument("--count", type=int, help="Limiter à N entreprises aléatoires")
     parser.add_argument("--resume", action="store_true", help="Reprendre un cache interrompu")
+    parser.add_argument("--workers", type=int, default=20, help="Nombre de workers parallèles (défaut: 20)")
     args = parser.parse_args()
 
     print(f"Extraction des numéros TAHITI depuis {args.csv}...")
@@ -135,26 +138,35 @@ def main():
 
     total = len(tahiti_numbers)
     errors = 0
-    save_every = 50  # sauvegarder toutes les 50 requêtes
+    done = 0
+    save_every = 200
+    lock = threading.Lock()
 
-    print(f"Début du téléchargement... (sauvegarde tous les {save_every})")
+    print(f"Début du téléchargement avec {args.workers} workers... (sauvegarde tous les {save_every})")
     start = time.time()
 
-    for i, num in enumerate(tahiti_numbers):
-        result = call_old_server(num)
-        if isinstance(result, dict) and "_error" in result:
-            errors += 1
-        cache[num] = result
+    with ThreadPoolExecutor(max_workers=args.workers) as executor:
+        futures = {executor.submit(call_old_server, num): num for num in tahiti_numbers}
 
-        elapsed = time.time() - start
-        rate = (i + 1) / elapsed
-        remaining = (total - i - 1) / rate if rate > 0 else 0
+        for future in as_completed(futures):
+            num = futures[future]
+            result = future.result()
 
-        if (i + 1) % 10 == 0 or i == 0:
-            print(f"  [{i+1}/{total}] {rate:.1f} req/s — reste ~{remaining/60:.1f}min — erreurs: {errors}")
+            with lock:
+                if isinstance(result, dict) and "_error" in result:
+                    errors += 1
+                cache[num] = result
+                done += 1
 
-        if (i + 1) % save_every == 0:
-            save_cache(cache, args.output)
+                elapsed = time.time() - start
+                rate = done / elapsed if elapsed > 0 else 0
+                remaining = (total - done) / rate if rate > 0 else 0
+
+                if done % 100 == 0 or done == 1:
+                    print(f"  [{done}/{total}] {rate:.1f} req/s — reste ~{remaining/60:.1f}min — erreurs: {errors}", flush=True)
+
+                if done % save_every == 0:
+                    save_cache(cache, args.output)
 
     save_cache(cache, args.output)
 

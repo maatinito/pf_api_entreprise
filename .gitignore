@@ -33,6 +33,9 @@ exportrte.csv
 # Compiled binary
 pf-entreprise
 
+# Benchmark cache (trop volumineux pour GitHub)
+benchmark/cache_itaiete.json
+
 # Editor/IDE
 # .idea/
 # .vscode/
