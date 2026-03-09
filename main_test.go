@@ -275,9 +275,9 @@ func TestParseRecord_Etablissement000026(t *testing.T) {
 		t.Errorf("Rue = %v, attendu \"Avenue Bruat\"", etab.Rue)
 	}
 
-	// BoitePostale dupliquée depuis l'entreprise (comme i-taiete)
-	if etab.BoitePostale == nil || *etab.BoitePostale != "115" {
-		t.Errorf("BoitePostale = %v, attendu \"115\"", etab.BoitePostale)
+	// BoitePostale null au niveau établissement (seulement sur entreprise, comme i-taiete)
+	if etab.BoitePostale != nil {
+		t.Errorf("BoitePostale = %v, attendu nil", etab.BoitePostale)
 	}
 	if etab.Telephone != nil {
 		t.Error("Telephone devrait être nil")

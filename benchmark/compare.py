@@ -36,6 +36,7 @@ import urllib.request
 import urllib.error
 import base64
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # --- Config ancien serveur ---
 OLD_BASE_URL = "https://api.gov.pf/i-taiete"
@@ -126,23 +127,27 @@ def normalize_etablissements(data):
 
 # ========== TEST 1 : VITESSE ==========
 
-def speed_test(tahiti_numbers, new_base_url, cache=None):
+def speed_test(tahiti_numbers, new_base_url, cache=None, new_workers=20):
     """Compare la vitesse des deux serveurs."""
     count = len(tahiti_numbers)
     print(f"\n{'='*60}")
     print(f" TEST DE VITESSE — {count} requêtes")
     print(f"{'='*60}")
 
-    # Nouveau serveur
-    print(f"\n>> Nouveau serveur ({new_base_url})...")
+    # Nouveau serveur (parallèle)
+    print(f"\n>> Nouveau serveur ({new_base_url}) — {new_workers} workers...")
     start = time.time()
     new_errors = 0
-    for i, num in enumerate(tahiti_numbers):
-        result = call_new_server(num, new_base_url)
-        if isinstance(result, dict) and "_error" in result:
-            new_errors += 1
-        if (i + 1) % 50 == 0:
-            print(f"   {i+1}/{count}...")
+    done = 0
+    with ThreadPoolExecutor(max_workers=new_workers) as executor:
+        futures = {executor.submit(call_new_server, num, new_base_url): num for num in tahiti_numbers}
+        for future in as_completed(futures):
+            result = future.result()
+            if isinstance(result, dict) and "_error" in result:
+                new_errors += 1
+            done += 1
+            if done % 1000 == 0:
+                print(f"   {done}/{count}...")
     new_time = time.time() - start
 
     # Ancien serveur (ou cache)
@@ -259,13 +264,27 @@ IGNORED_FIELDS = {
 }
 
 
-def compare_test(tahiti_numbers, new_base_url, cache=None, show_ignored=False):
+def compare_test(tahiti_numbers, new_base_url, cache=None, show_ignored=False, new_workers=20):
     """Compare les résultats des deux serveurs champ par champ."""
     count = len(tahiti_numbers)
     source = "cache local" if cache is not None else OLD_BASE_URL
     print(f"\n{'='*60}")
     print(f" TEST DE COMPARAISON — {count} entreprises (source: {source})")
     print(f"{'='*60}")
+
+    # Pré-charger toutes les réponses du nouveau serveur en parallèle
+    print(f"   Chargement parallèle nouveau serveur ({new_workers} workers)...")
+    new_results = {}
+    done_pre = 0
+    with ThreadPoolExecutor(max_workers=new_workers) as executor:
+        futures = {executor.submit(call_new_server, num, new_base_url): num for num in tahiti_numbers}
+        for future in as_completed(futures):
+            num = futures[future]
+            new_results[num] = future.result()
+            done_pre += 1
+            if done_pre % 5000 == 0:
+                print(f"   {done_pre}/{count} pré-chargés...")
+    print(f"   {count}/{count} pré-chargés. Comparaison en cours...")
 
     stats = defaultdict(lambda: {
         "total": 0, "identical": 0, "different": 0,
@@ -288,9 +307,9 @@ def compare_test(tahiti_numbers, new_base_url, cache=None, show_ignored=False):
         else:
             old_data = call_old_server(num)
 
-        new_data = call_new_server(num, new_base_url)
+        new_data = new_results[num]
 
-        if (i + 1) % 100 == 0:
+        if (i + 1) % 10000 == 0:
             print(f"   {i+1}/{count}...")
 
         if isinstance(old_data, dict) and "_error" in old_data:
@@ -402,6 +421,7 @@ def main():
     parser.add_argument("--speed-only", action="store_true", help="Test de vitesse uniquement")
     parser.add_argument("--compare-only", action="store_true", help="Test de comparaison uniquement")
     parser.add_argument("--show-ignored", action="store_true", help="Afficher aussi les champs ignorés (IDs, version...)")
+    parser.add_argument("--new-workers", type=int, default=20, help="Nombre de workers parallèles pour le nouveau serveur (défaut: 20)")
     args = parser.parse_args()
 
     cache = load_cache(args.cache)
@@ -418,10 +438,10 @@ def main():
     print(f"{len(tahiti_numbers)} numéros à comparer.")
 
     if not args.compare_only:
-        speed_test(tahiti_numbers, args.new_url, cache)
+        speed_test(tahiti_numbers, args.new_url, cache, args.new_workers)
 
     if not args.speed_only:
-        compare_test(tahiti_numbers, args.new_url, cache, args.show_ignored)
+        compare_test(tahiti_numbers, args.new_url, cache, args.show_ignored, args.new_workers)
 
 
 if __name__ == "__main__":

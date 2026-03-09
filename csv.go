@@ -204,8 +204,8 @@ func parseRecord(record []string, etabID int, entrepriseIDs map[string]int, entr
 		Entreprise:          ent,
 		NumEtablissement:    numETA,
 		NomCommercial:       nullableTrimmedString(record[11]),
-		BoitePostale:        ent.BoitePostale,
-		AdressePostale:      ent.AdressePostale,
+		BoitePostale:        nil, // i-taiete: null au niveau établissement (seulement sur entreprise)
+		AdressePostale:      nil, // i-taiete: null au niveau établissement (seulement sur entreprise)
 		Telephone:           nil,
 		Fax:                 nil,
 		PointKilometrique:   nullablePK(record[14]),
