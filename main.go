@@ -16,13 +16,18 @@ func main() {
 	// Initialiser les tables de référence
 	initReferences()
 
-	// Charger le CSV
+	// Créer le DataStore (vide, not ready)
+	store := NewDataStore()
+
+	// Tenter de charger le CSV — si absent, le serveur démarre en mode "not ready"
 	log.Printf("Chargement du CSV: %s", csvPath)
-	store, err := LoadCSV(csvPath)
-	if err != nil {
-		log.Fatalf("Impossible de charger le CSV: %v", err)
+	if err := store.Reload(csvPath); err != nil {
+		log.Printf("WARNING: CSV non disponible au démarrage: %v", err)
+		log.Printf("Le serveur démarre en mode 'not ready' — /healthz retournera 503")
+		log.Printf("Utilisez POST /admin/reload une fois le CSV disponible")
+	} else {
+		log.Printf("CSV chargé avec succès: %d établissements", store.Count())
 	}
-	log.Printf("CSV chargé avec succès: %d établissements", store.Count())
 
 	// Routes
 	mux := http.NewServeMux()

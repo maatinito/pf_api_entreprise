@@ -24,6 +24,13 @@ type DataStore struct {
 	loaded bool
 }
 
+// NewDataStore crée un DataStore vide (loaded=false).
+func NewDataStore() *DataStore {
+	return &DataStore{
+		index: make(map[string][]Etablissement),
+	}
+}
+
 // Lookup retourne les établissements pour un numéro TAHITI donné.
 func (ds *DataStore) Lookup(numTahiti string) []Etablissement {
 	ds.mu.RLock()
