@@ -1,0 +1,514 @@
+{
+  "11100": {
+    "communeAssociee": "Anaa",
+    "communeMere": "Anaa"
+  },
+  "11200": {
+    "communeAssociee": "Faaite",
+    "communeMere": "Anaa"
+  },
+  "12000": {
+    "communeAssociee": "Arue",
+    "communeMere": "Arue"
+  },
+  "12001": {
+    "communeAssociee": "Tetiaroa",
+    "communeMere": "Arue"
+  },
+  "13100": {
+    "communeAssociee": "Apataki",
+    "communeMere": "Arutua"
+  },
+  "13200": {
+    "communeAssociee": "Arutua",
+    "communeMere": "Arutua"
+  },
+  "13300": {
+    "communeAssociee": "Kaukura",
+    "communeMere": "Arutua"
+  },
+  "14100": {
+    "communeAssociee": "Anau",
+    "communeMere": "Bora Bora"
+  },
+  "14200": {
+    "communeAssociee": "Faanui",
+    "communeMere": "Bora Bora"
+  },
+  "14300": {
+    "communeAssociee": "Nunue",
+    "communeMere": "Bora Bora"
+  },
+  "15000": {
+    "communeAssociee": "Faaa",
+    "communeMere": "Faaa"
+  },
+  "16100": {
+    "communeAssociee": "Fakarava",
+    "communeMere": "Fakarava"
+  },
+  "16101": {
+    "communeAssociee": "Toau",
+    "communeMere": "Fakarava"
+  },
+  "16200": {
+    "communeAssociee": "Kauehi",
+    "communeMere": "Fakarava"
+  },
+  "16201": {
+    "communeAssociee": "Aratika",
+    "communeMere": "Kauehi"
+  },
+  "16202": {
+    "communeAssociee": "Raraka",
+    "communeMere": "Kauehi"
+  },
+  "16300": {
+    "communeAssociee": "Niau",
+    "communeMere": "Fakarava"
+  },
+  "17100": {
+    "communeAssociee": "Fakahina",
+    "communeMere": "Fangatau"
+  },
+  "17200": {
+    "communeAssociee": "Fangatau",
+    "communeMere": "Fangatau"
+  },
+  "18000": {
+    "communeAssociee": "Fatu Hiva",
+    "communeMere": "Fatu Hiva"
+  },
+  "19000": {
+    "communeAssociee": "Gambier",
+    "communeMere": "Gambier"
+  },
+  "19005": {
+    "communeAssociee": "Makaroa",
+    "communeMere": "Gambier"
+  },
+  "19006": {
+    "communeAssociee": "Mangareva",
+    "communeMere": "Gambier"
+  },
+  "19009": {
+    "communeAssociee": "Marutea Sud",
+    "communeMere": "Gambier"
+  },
+  "20100": {
+    "communeAssociee": "Amanu",
+    "communeMere": "Hao"
+  },
+  "20200": {
+    "communeAssociee": "Hao",
+    "communeMere": "Hao"
+  },
+  "20204": {
+    "communeAssociee": "Paraoa",
+    "communeMere": "Hao"
+  },
+  "20300": {
+    "communeAssociee": "Hereheretue",
+    "communeMere": "Hao"
+  },
+  "20303": {
+    "communeAssociee": "Nukutepipi",
+    "communeMere": "Hereheretue"
+  },
+  "21100": {
+    "communeAssociee": "Hikueru",
+    "communeMere": "Hikueru"
+  },
+  "21200": {
+    "communeAssociee": "Marokau",
+    "communeMere": "Hikueru"
+  },
+  "22100": {
+    "communeAssociee": "Hitiaa",
+    "communeMere": "Hitiaa O Te Ra"
+  },
+  "22200": {
+    "communeAssociee": "Mahaena",
+    "communeMere": "Hitiaa O Te Ra"
+  },
+  "22300": {
+    "communeAssociee": "Papenoo",
+    "communeMere": "Hitiaa O Te Ra"
+  },
+  "22400": {
+    "communeAssociee": "Tiarei",
+    "communeMere": "Hitiaa O Te Ra"
+  },
+  "23100": {
+    "communeAssociee": "Atuona",
+    "communeMere": "Hiva Oa"
+  },
+  "23200": {
+    "communeAssociee": "Puamau",
+    "communeMere": "Hiva Oa"
+  },
+  "24100": {
+    "communeAssociee": "Faie",
+    "communeMere": "Huahine"
+  },
+  "24200": {
+    "communeAssociee": "Fare",
+    "communeMere": "Huahine"
+  },
+  "24300": {
+    "communeAssociee": "Fitii",
+    "communeMere": "Huahine"
+  },
+  "24400": {
+    "communeAssociee": "Haapu",
+    "communeMere": "Huahine"
+  },
+  "24500": {
+    "communeAssociee": "Maeva",
+    "communeMere": "Huahine"
+  },
+  "24600": {
+    "communeAssociee": "Maroe",
+    "communeMere": "Huahine"
+  },
+  "24700": {
+    "communeAssociee": "Parea",
+    "communeMere": "Huahine"
+  },
+  "24800": {
+    "communeAssociee": "Tefarerii",
+    "communeMere": "Huahine"
+  },
+  "25000": {
+    "communeAssociee": "Mahina",
+    "communeMere": "Mahina"
+  },
+  "26100": {
+    "communeAssociee": "Katiu",
+    "communeMere": "Makemo"
+  },
+  "26200": {
+    "communeAssociee": "Makemo",
+    "communeMere": "Makemo"
+  },
+  "26300": {
+    "communeAssociee": "Raroia",
+    "communeMere": "Makemo"
+  },
+  "26400": {
+    "communeAssociee": "Taenga",
+    "communeMere": "Makemo"
+  },
+  "27100": {
+    "communeAssociee": "Ahe",
+    "communeMere": "Manihi"
+  },
+  "27200": {
+    "communeAssociee": "Manihi",
+    "communeMere": "Manihi"
+  },
+  "28000": {
+    "communeAssociee": "Maupiti",
+    "communeMere": "Maupiti"
+  },
+  "28002": {
+    "communeAssociee": "Manuae (Scilly)",
+    "communeMere": "Maupiti"
+  },
+  "29100": {
+    "communeAssociee": "Afareaitu",
+    "communeMere": "Moorea-Maiao"
+  },
+  "29200": {
+    "communeAssociee": "Haapiti",
+    "communeMere": "Moorea-Maiao"
+  },
+  "29300": {
+    "communeAssociee": "Maiao",
+    "communeMere": "Moorea-Maiao"
+  },
+  "29400": {
+    "communeAssociee": "Paopao",
+    "communeMere": "Moorea-Maiao"
+  },
+  "29500": {
+    "communeAssociee": "Papetoai",
+    "communeMere": "Moorea-Maiao"
+  },
+  "29600": {
+    "communeAssociee": "Teavaro",
+    "communeMere": "Moorea-Maiao"
+  },
+  "30100": {
+    "communeAssociee": "Napuka",
+    "communeMere": "Napuka"
+  },
+  "30200": {
+    "communeAssociee": "Tepoto Nord",
+    "communeMere": "Napuka"
+  },
+  "31100": {
+    "communeAssociee": "Hatiheu",
+    "communeMere": "Nuku Hiva"
+  },
+  "31200": {
+    "communeAssociee": "Taiohae",
+    "communeMere": "Nuku Hiva"
+  },
+  "31300": {
+    "communeAssociee": "Taipivai",
+    "communeMere": "Nuku Hiva"
+  },
+  "32100": {
+    "communeAssociee": "Nukutavake",
+    "communeMere": "Nukutavake"
+  },
+  "32101": {
+    "communeAssociee": "Pinaki",
+    "communeMere": "Nukutavake"
+  },
+  "32200": {
+    "communeAssociee": "Vahitahi",
+    "communeMere": "Nukutavake"
+  },
+  "32300": {
+    "communeAssociee": "Vairaatea",
+    "communeMere": "Nukutavake"
+  },
+  "33000": {
+    "communeAssociee": "Paea",
+    "communeMere": "Paea"
+  },
+  "34000": {
+    "communeAssociee": "Papara",
+    "communeMere": "Papara"
+  },
+  "35000": {
+    "communeAssociee": "Papeete",
+    "communeMere": "Papeete"
+  },
+  "36000": {
+    "communeAssociee": "Pirae",
+    "communeMere": "Pirae"
+  },
+  "37000": {
+    "communeAssociee": "Pukapuka",
+    "communeMere": "Pukapuka"
+  },
+  "38000": {
+    "communeAssociee": "Punaauia",
+    "communeMere": "Punaauia"
+  },
+  "39100": {
+    "communeAssociee": "Anatonu",
+    "communeMere": "Raivavae"
+  },
+  "39200": {
+    "communeAssociee": "Rairua-Mahanatoa",
+    "communeMere": "Raivavae"
+  },
+  "39300": {
+    "communeAssociee": "Vaiuru",
+    "communeMere": "Raivavae"
+  },
+  "40100": {
+    "communeAssociee": "Makatea",
+    "communeMere": "Rangiroa"
+  },
+  "40200": {
+    "communeAssociee": "Mataiva",
+    "communeMere": "Rangiroa"
+  },
+  "40300": {
+    "communeAssociee": "Rangiroa",
+    "communeMere": "Rangiroa"
+  },
+  "40400": {
+    "communeAssociee": "Tikehau",
+    "communeMere": "Rangiroa"
+  },
+  "41000": {
+    "communeAssociee": "Rapa",
+    "communeMere": "Rapa"
+  },
+  "42100": {
+    "communeAssociee": "Pukarua",
+    "communeMere": "Reao"
+  },
+  "42200": {
+    "communeAssociee": "Reao",
+    "communeMere": "Reao"
+  },
+  "43100": {
+    "communeAssociee": "Amaru",
+    "communeMere": "Rimatara"
+  },
+  "43200": {
+    "communeAssociee": "Anapoto",
+    "communeMere": "Rimatara"
+  },
+  "43300": {
+    "communeAssociee": "Mutuaura",
+    "communeMere": "Rimatara"
+  },
+  "44100": {
+    "communeAssociee": "Avera (Rurutu)",
+    "communeMere": "Rurutu"
+  },
+  "44200": {
+    "communeAssociee": "Hauti",
+    "communeMere": "Rurutu"
+  },
+  "44300": {
+    "communeAssociee": "Moerai",
+    "communeMere": "Rurutu"
+  },
+  "45100": {
+    "communeAssociee": "Faaaha",
+    "communeMere": "Tahaa"
+  },
+  "45200": {
+    "communeAssociee": "Haamene",
+    "communeMere": "Tahaa"
+  },
+  "45300": {
+    "communeAssociee": "Hipu",
+    "communeMere": "Tahaa"
+  },
+  "45400": {
+    "communeAssociee": "Iripau",
+    "communeMere": "Tahaa"
+  },
+  "45500": {
+    "communeAssociee": "Niua",
+    "communeMere": "Tahaa"
+  },
+  "45600": {
+    "communeAssociee": "Ruutia",
+    "communeMere": "Tahaa"
+  },
+  "45700": {
+    "communeAssociee": "Tapuamu",
+    "communeMere": "Tahaa"
+  },
+  "45800": {
+    "communeAssociee": "Vaitoare",
+    "communeMere": "Tahaa"
+  },
+  "46000": {
+    "communeAssociee": "Tahuata",
+    "communeMere": "Tahuata"
+  },
+  "47100": {
+    "communeAssociee": "Afaahiti",
+    "communeMere": "Taiarapu-Est"
+  },
+  "47200": {
+    "communeAssociee": "Faaone",
+    "communeMere": "Taiarapu-Est"
+  },
+  "47300": {
+    "communeAssociee": "Pueu",
+    "communeMere": "Taiarapu-Est"
+  },
+  "47400": {
+    "communeAssociee": "Tautira",
+    "communeMere": "Taiarapu-Est"
+  },
+  "48100": {
+    "communeAssociee": "Teahupoo",
+    "communeMere": "Taiarapu-Ouest"
+  },
+  "48200": {
+    "communeAssociee": "Toahotu",
+    "communeMere": "Taiarapu-Ouest"
+  },
+  "48300": {
+    "communeAssociee": "Vairao",
+    "communeMere": "Taiarapu-Ouest"
+  },
+  "49100": {
+    "communeAssociee": "Takapoto",
+    "communeMere": "Takaroa"
+  },
+  "49200": {
+    "communeAssociee": "Takaroa",
+    "communeMere": "Takaroa"
+  },
+  "50100": {
+    "communeAssociee": "Avera (Taputapuatea)",
+    "communeMere": "Taputapuatea"
+  },
+  "50200": {
+    "communeAssociee": "Opoa",
+    "communeMere": "Taputapuatea"
+  },
+  "50300": {
+    "communeAssociee": "Puohine",
+    "communeMere": "Taputapuatea"
+  },
+  "51000": {
+    "communeAssociee": "Tatakoto",
+    "communeMere": "Tatakoto"
+  },
+  "52100": {
+    "communeAssociee": "Mataiea",
+    "communeMere": "Teva I Uta"
+  },
+  "52200": {
+    "communeAssociee": "Papeari",
+    "communeMere": "Teva I Uta"
+  },
+  "53100": {
+    "communeAssociee": "Mahu",
+    "communeMere": "Tubuai"
+  },
+  "53200": {
+    "communeAssociee": "Mataura",
+    "communeMere": "Tubuai"
+  },
+  "53300": {
+    "communeAssociee": "Taahuaia",
+    "communeMere": "Tubuai"
+  },
+  "54100": {
+    "communeAssociee": "Fetuna",
+    "communeMere": "Tumaraa"
+  },
+  "54200": {
+    "communeAssociee": "Tehurui",
+    "communeMere": "Tumaraa"
+  },
+  "54300": {
+    "communeAssociee": "Tevaitoa",
+    "communeMere": "Tumaraa"
+  },
+  "54400": {
+    "communeAssociee": "Vaiaau",
+    "communeMere": "Tumaraa"
+  },
+  "55000": {
+    "communeAssociee": "Tureia",
+    "communeMere": "Tureia"
+  },
+  "56000": {
+    "communeAssociee": "Ua Huka",
+    "communeMere": "Ua Huka"
+  },
+  "57100": {
+    "communeAssociee": "Hakahau",
+    "communeMere": "Ua Pou"
+  },
+  "57200": {
+    "communeAssociee": "Hakamaii",
+    "communeMere": "Ua Pou"
+  },
+  "58000": {
+    "communeAssociee": "Uturoa",
+    "communeMere": "Uturoa"
+  },
+  "99000": {
+    "communeAssociee": "Commune associee 990",
+    "communeMere": "Commune 99"
+  }
+}

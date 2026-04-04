@@ -27,6 +27,15 @@ go.work.sum
 # env file
 .env
 
+# CSV data file (loaded at runtime from PVC, not committed)
+exportrte.csv
+
+# Compiled binary
+pf-entreprise
+
+# Benchmark cache (trop volumineux pour GitHub)
+benchmark/cache_itaiete.json
+
 # Editor/IDE
 # .idea/
 # .vscode/
